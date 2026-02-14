@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Harsh 💗</title>
+    <style>
+        :root {
+            --pink: #ff4d6d;
+            --light-pink: #ffb3c1;
+            --dark-pink: #c9184a;
+            --white: #fff0f3;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--white);
+            color: var(--dark-pink);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        #game-container {
+            width: 90%;
+            max-width: 450px;
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(255, 77, 109, 0.2);
+            position: relative;
+            z-index: 10;
+            text-align: center;
+        }
+
+        .screen { display: none; animation: fadeIn 0.4s ease-out; }
+        .screen.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        /* Shake Animation */
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            75% { transform: translateX(-10px); }
+            100% { transform: translateX(0); }
+        }
+        .shake { animation: shake 0.3s ease-in-out; }
+
+        #progress-container {
+            width: 100%;
+            height: 12px;
+            background: #ffe5ec;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            overflow: hidden;
+            display: none;
+        }
+        #love-meter {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(to right, var(--pink), var(--dark-pink));
+            transition: width 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        button {
+            background: var(--pink);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 8px;
+            width: 80%;
+            transition: 0.3s;
+        }
+        button:hover { background: var(--dark-pink); transform: translateY(-2px); }
+
+        .reward-img { width: 100%; border-radius: 15px; margin: 15px 0; border: 4px solid var(--light-pink); }
+
+        .choice-container { position: relative; display: flex; justify-content: center; gap: 15px; margin-top: 20px; min-height: 180px; }
+        .choice-box { cursor: pointer; border: 3px solid #eee; padding: 10px; border-radius: 15px; transition: 0.3s; width: 45%; background: white; }
+        .choice-box img { width: 100%; border-radius: 10px; height: 120px; object-fit: cover; }
+        
+        #bella-blocker {
+            position: absolute;
+            z-index: 100;
+            display: none;
+            pointer-events: none;
+            transition: all 0.2s ease;
+            width: 120px;
+            left: 50%;
+            top: 20%;
+            transform: translateX(-50%);
+        }
+
+        .kiss-particle {
+            position: fixed;
+            font-size: 2.5rem;
+            pointer-events: none;
+            z-index: 1000;
+            animation: flyAway 1.2s forwards;
+        }
+        @keyframes flyAway {
+            0% { transform: translate(0,0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--x), var(--y)) rotate(var(--r)) scale(0); opacity: 0; }
+        }
+
+        .scroll { background: #fdf5e6; padding: 20px; border-left: 5px solid #d2b48c; border-radius: 5px; font-style: italic; text-align: left; }
+    </style>
+</head>
+<body>
+
+    <audio id="bg-music" loop>
+        <source src="https://www.bensound.com/bensound-music/bensound-love.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="fail-sound">
+        <source src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="success-sound">
+        <source src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3" type="audio/mpeg">
+    </audio>
+
+<div id="game-container">
+    <div id="progress-container"><div id="love-meter"></div></div>
+
+    <div id="intro" class="screen active">
+        <h2>Hey Harsh,</h2>
+        <p>This Valentine’s you don’t need to look for love…<br>
+        <strong>because love is already looking at you 💗</strong></p>
+        <button onclick="startGame()">Tap to continue</button>
+    </div>
+
+    <div id="level1" class="screen">
+        <h3>Level 1: Memory Test</h3>
+        <p>When did we first start talking?</p>
+        <button onclick="wrong(this, 'Not then! Think harder...')">1st January</button>
+        <button onclick="showReward(1)">14th January</button>
+        <button onclick="wrong(this, 'Harsh! Are you serious? Try again!')">14th February</button>
+    </div>
+
+    <div id="level2" class="screen">
+        <h3>Level 2: The Puzzle</h3>
+        <p>Question: What is my default mode?</p>
+        <button onclick="wrong(this, 'I wish it was just cute...')">Cute</button>
+        <button onclick="wrong(this, 'Only when you don\'t reply!')">Overthinking</button>
+        <button onclick="showReward(2)">Hungry</button>
+        <button onclick="wrong(this, 'Only when I am hungry!')">Angry</button>
+    </div>
+
+    <div id="level3" class="screen">
+        <h3>Level 3: Choose Wisely</h3>
+        <p>Who is your favourite?</p>
+        <div class="choice-container">
+            <div class="choice-box" onclick="wrong(this, 'EXCUSE ME? I\'m jealous of Bella! Pick ME.')">
+                <img src="https://placecats.com/300/300" alt="Bella">
+                <p>Bella Cat 🐱</p>
+            </div>
+            <div id="me-box" class="choice-box" onclick="trySelectMe()">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Lucky" alt="Me">
+                <p>ME! 👸</p>
+            </div>
+            <div id="bella-blocker">
+                <img src="https://placecats.com/300/300" style="width: 100%; border-radius: 50%; border: 4px solid var(--pink);">
+                <p style="background: white; border-radius: 10px; margin-top: -10px; font-weight: bold; font-size: 12px;">BELLA: NO! PICK ME! 😾</p>
+            </div>
+        </div>
+        <p id="bella-msg" style="font-size: 0.8rem; color: var(--pink); margin-top: 10px; min-height: 20px;"></p>
+    </div>
+
+    <div id="level4" class="screen">
+        <h3>Level 4: Priorities</h3>
+        <p>What do I like more?</p>
+        <button onclick="wrong(this, 'Close, but no.')">Biryani</button>
+        <button onclick="wrong(this, 'Sleep is life, but not more than you.')">Sleep</button>
+        <button onclick="showReward(4)">Harsh</button>
+        <button onclick="wrong(this, 'Art is my soul, but you are my heart.')">Art</button>
+    </div>
+
+    <div id="level5" class="screen">
+        <div class="scroll">
+            <p>"I know we aren’t together today. But distance has never made me feel far from you. <br><br>
+            <strong>Tu aahes, mhanje sagla aahe 💗</strong><br><br>
+            Happy Valentine’s, my safe place. This Valentine’s is virtual, but my feelings aren’t. 
+            Next one, I’m holding your hand for real. Will you be my Valentine? 🌹 
+            After 4 years of knowing me will you still choose me for next 40?"</p>
+        </div>
+        <button onclick="finalExplosion()">Yes!</button>
+        <button onclick="finalExplosion()">Always!</button>
+    </div>
+
+    <div id="reward-screen" class="screen">
+        <h2 id="reward-title">Correct! 🎉</h2>
+        <div id="reward-content"></div>
+        <button onclick="nextLevel()" style="width: auto;">Continue to Next Level</button>
+    </div>
+</div>
+
+<script>
+    let currentLvl = 1;
+    let meAttempts = 0;
+    const bgMusic = document.getElementById('bg-music');
+    const failSnd = document.getElementById('fail-sound');
+    const successSnd = document.getElementById('success-sound');
+
+    function startGame() {
+        bgMusic.play().catch(e => console.log("Music interaction required"));
+        document.getElementById('intro').classList.remove('active');
+        document.getElementById('progress-container').style.display = 'block';
+        document.getElementById('level1').classList.add('active');
+    }
+
+    function wrong(btn, msg) {
+        failSnd.play();
+        if (navigator.vibrate) navigator.vibrate(200);
+        btn.classList.add('shake');
+        setTimeout(() => btn.classList.remove('shake'), 300);
+        alert(msg);
+    }
+
+    function trySelectMe() {
+        meAttempts++;
+        if (meAttempts < 5) {
+            failSnd.play();
+            const blocker = document.getElementById('bella-blocker');
+            const msg = document.getElementById('bella-msg');
+            blocker.style.display = 'block';
+            msg.innerText = `Attempt ${meAttempts}: Bella jumped in the way! (5 attempts needed)`;
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+        } else {
+            showReward(3);
+        }
+    }
+
+    function showReward(lvl) {
+        currentLvl = lvl;
+        successSnd.play();
+        const content = document.getElementById('reward-content');
+        const title = document.getElementById('reward-title');
+        
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('reward-screen').classList.add('active');
+
+        if(lvl === 1) {
+            title.innerText = "Level 1 Cleared! 🎵";
+            content.innerHTML = `<p>Reward: <b>Perfect - Ed Sheeran</b><br><i>"I found a love, to carry more than just my secrets..."</i></p>`;
+        } else if(lvl === 2) {
+            title.innerText = "Level 2 Cleared! 📸";
+            content.innerHTML = `<img src="https://picsum.photos/300/200" class="reward-img">
+            <p>“We’ve already lived a thousand moments… Imagine what forever will look like.”</p>`;
+        } else if(lvl === 3) {
+            title.innerText = "Level 3 Cleared! 🎨";
+            content.innerHTML = `<p>Here is some art I made for you:</p>
+            <img src="https://picsum.photos/301/200" class="reward-img">
+            <p><b>[SCANNING HARSH...]</b><br>Target located in my heart. ❤️</p>`;
+        } else if(lvl === 4) {
+            title.innerText = "Level 4 Cleared! 💋";
+            content.innerHTML = `<div style="font-size: 3rem; margin: 20px;">💋💋💋</div><p>Virtual kisses sent!</p>`;
+            // Kiss Blast Effect
+            for(let i=0; i<20; i++) setTimeout(createKiss, i * 50);
+        }
+        updateLoveMeter(lvl);
+    }
+
+    function createKiss() {
+        const kiss = document.createElement('div');
+        kiss.className = 'kiss-particle';
+        kiss.innerHTML = '💋';
+        kiss.style.left = '50vw';
+        kiss.style.top = '50vh';
+        // Random explosion directions
+        kiss.style.setProperty('--x', (Math.random() - 0.5) * 600 + 'px');
+        kiss.style.setProperty('--y', (Math.random() - 0.5) * 600 + 'px');
+        kiss.style.setProperty('--r', (Math.random() * 360) + 'deg');
+        document.body.appendChild(kiss);
+        setTimeout(() => kiss.remove(), 1200);
+    }
+
+    function nextLevel() {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        let next = currentLvl + 1;
+        document.getElementById(`level${next}`).classList.add('active');
+    }
+
+    function updateLoveMeter(lvl) {
+        document.getElementById('love-meter').style.width = (lvl * 20) + "%";
+    }
+
+    function finalExplosion() {
+        successSnd.play();
+        updateLoveMeter(5);
+        document.getElementById('game-container').innerHTML = `
+            <h1 style="color: var(--dark-pink)">You won me again! 🏆</h1>
+            <p style="font-size: 1.3rem;">Happy Valentine's Day, Harsh! ❤️<br>I love you!</p>
+        `;
+        setInterval(createHeart, 150);
+    }
+
+    function createHeart() {
+        const h = document.createElement('div');
+        h.style.position = 'fixed';
+        h.style.left = Math.random() * 100 + 'vw';
+        h.style.top = '100vh';
+        h.style.pointerEvents = 'none';
+        h.innerHTML = Math.random() > 0.5 ? '💗' : '🌹';
+        h.style.fontSize = '24px';
+        document.body.appendChild(h);
+        
+        let pos = 100;
+        let int = setInterval(() => {
+            if(pos <= -10) { clearInterval(int); h.remove(); }
+            pos -= 1;
+            h.style.top = pos + 'vh';
+            h.style.opacity = pos/100;
+        }, 20);
+    }
+</script>
+
+</body>
+</html>
